@@ -54,8 +54,8 @@ class PictureManager(object):
 
 
     def imseg(self, pic):
+        cv2.circle(picture.img,center[0],int(center[1]),(255,255,255))
         cv2.imshow('image',picture.img)
-        cv2.circle(picture.img,center[0],int(center[1])
         k = cv2.waitKey(0) & 0xFF
         if k == 27:         # wait for ESC key to exit
             cv2.destroyAllWindows()
