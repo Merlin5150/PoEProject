@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import imutils
 
 
 class PictureManager(object):
@@ -18,8 +19,25 @@ class PictureManager(object):
         screenwidth = 600
         screenheight = 450
 
-        greenLower = (29,86,6)
-        greenUpper = (64,255,255)
+        self.greenLower = (29,86,6)
+        self.greenUpper = (64,255,255)
+
+    def getcenter(self, greenLower, greenUpper):
+        
+        # Resizes the frame, blurs the frame, converts to HSV color space
+        self.img = imutils.resize(self.img, width=600)
+        blurred = cv2.GaussianBlur(self.img,(11,11),0)
+        hsv = cv2.cvtColor(self.frame,cv2.COLOR_BGR2HSV)
+
+        # Constructs a mask for "green" objects, performs dilations and erosions to remove erroneous parts of the mask
+        mask = cv2.inRange(hsv, greenLower, greenUpper)
+        mask = cv2.erode(mask,None,iterations=1)
+
+
+
+        # Finds contours in the mask, initializes the current (x,y) center
+        self.cnts = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,
+            cv2.CHAIN_APPROX_SIMPLE)[-2]
 
     def imseg(self):
         cv2.imshow('image',self.img)
@@ -64,12 +82,9 @@ class WebCam(object):
         self.cnts = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,
             cv2.CHAIN_APPROX_SIMPLE)[-2]
 
-    def update_webcam(self, center):
-        # Draw a dot to represent the wand's coordinates
-        cv2.circle(webcam.frame, center, 5, redColor, -1)
-
 if __name__ == '__main__':
 
 # ****************** INITIALIZING STUFF ****************** #
     picture = PictureManager()
+    picture.getcenter(self.greenLower, self.greenUpper)
     picture.imseg()
