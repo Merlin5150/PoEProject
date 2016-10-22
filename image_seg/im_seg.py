@@ -23,7 +23,7 @@ class PictureManager(object):
         self.greenUpper = (64,255,255)
 
 
-    def getcenter(self, greenLower, greenUpper):
+    def getcontours(self, greenLower, greenUpper):
         
         # Resizes the frame, blurs the frame, converts to HSV color space
         img = imutils.resize(self.img, width=600)
@@ -42,19 +42,23 @@ class PictureManager(object):
         if len(self.cnts) > 0:
             # Find the largest contour in the mask, use it to compute the minimum enclosing circle and centroid for that contour
             c = max(self.cnts,key=cv2.contourArea)
-            M = cv2.moments(c)
-            (center,radius) = cv2.minEnclosingCircle(c)
-            Mlist= [M["m10"], M["m00"],M["m01"],M["m00"]]
+            # print c
+            cv2.drawContours(self.img, self.cnts, -1, (0,255,0), 3)
 
-            if any(Mlist) == 0:
-                return None
-            else:
-                center = (int(M["m10"]/M["m00"]), int(M["m01"]/M["m00"]))
-                return [center,radius]
+            # #Finds center of largest contour area
+            # M = cv2.moments(c)
+            # (center,radius) = cv2.minEnclosingCircle(c)
+            # Mlist= [M["m10"], M["m00"],M["m01"],M["m00"]]
 
+            # if any(Mlist) == 0:
+            #     return None
+            # else:
+            #     center = (int(M["m10"]/M["m00"]), int(M["m01"]/M["m00"]))
+            #     return [center,radius]
+        return
 
     def imseg(self, pic):
-        cv2.circle(picture.img,center[0],int(center[1]),(255,255,255))
+        # cv2.circle(picture.img,center[0],int(center[1]),(255,255,255))
         cv2.imshow('image',picture.img)
         k = cv2.waitKey(0) & 0xFF
         if k == 27:         # wait for ESC key to exit
@@ -64,6 +68,5 @@ if __name__ == '__main__':
 
 # ****************** INITIALIZING STUFF ****************** #
     picture = PictureManager()
-    center = picture.getcenter(picture.greenLower, picture.greenUpper)
-    print center
+    picture.getcontours(picture.greenLower, picture.greenUpper)
     picture.imseg(picture.img)
