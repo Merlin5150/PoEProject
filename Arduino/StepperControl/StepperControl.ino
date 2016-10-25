@@ -37,17 +37,24 @@ void loop() {
       stepCommand = Serial.read() - '0';  // converts incoming data to integer
       stepperPosition += stepCommand;
       stepSize = abs(stepCommand);
-      Serial.println(stepSize);
+      Serial.println(stepCommand);
 
-      if (stepSize > 0){
+      boolean negative = false;
+      byte aChar = Serial.read();
+      Serial.println(aChar);
+      if(aChar == '-'){
+        negative = true;
+      }
+
+      if (!negative){
         // move the stepper in the positive direction
-        MyStepper->step(stepSize, FORWARD, INTERLEAVE);
+        myStepper->step(stepSize, FORWARD, INTERLEAVE);
         delay(3);
       }
       
       else {
         // move the stepper in the positive direction
-        MyStepper->step(stepSize, BACKWARD, INTERLEAVE);
+        myStepper->step(stepSize, BACKWARD, INTERLEAVE);
         delay(3);
       }
   }
