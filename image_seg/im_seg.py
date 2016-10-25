@@ -15,21 +15,21 @@ class PictureManager(object):
         # blueColor = (255,0,0)
         # whiteColor = (255,255,255)
         # blackColor = (0,0,0)
-
         self.yellowLower = (20,100,100)
         self.yellowUpper = (30,255,255)
-        self.greenLower = (29,86,6)
+        self.greenLower = (29,30,6)
         self.greenUpper = (64,255,255)
 
         self.Lower = [self.yellowLower,self.greenLower]
         self.Upper =[self.yellowUpper,self.greenUpper]
 
     def getcontours(self, Lower, Upper):
-        
+        image = self.pixpic
         # Resizes the frame, blurs the frame, converts to HSV color space
-        img = imutils.resize(self.img, width=600)
-        blurred = cv2.GaussianBlur(self.img,(11,11),0)
-        hsv = cv2.cvtColor(self.img,cv2.COLOR_BGR2HSV)
+        img = imutils.resize(image, width=600)
+        self.resize_img = image
+        blurred = cv2.GaussianBlur(image,(11,11),0)
+        hsv = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
 
         for iterator in range(0,2):
             # Constructs a mask for "green" objects, performs dilations and erosions to remove erroneous parts of the mask
@@ -40,9 +40,10 @@ class PictureManager(object):
             self.cnts = cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,
                 cv2.CHAIN_APPROX_SIMPLE)[-2]
 
+            #Draws all contours.
             if len(self.cnts) > 0:
-                #Draws all contours.
                 cv2.drawContours(self.img, self.cnts, -1, (0,255,0), 3)
+                cv2.drawContours(self.pixpic, self.cnts, -1, (0,255,0), 3)
 
             # #Finds center of largest contour area
             # # Find the largest contour in the mask, use it to compute the minimum enclosing circle and centroid for that contour
@@ -58,9 +59,31 @@ class PictureManager(object):
             #     return [center,radius]
         return
 
-    def imseg(self, pic):
+    def pixellate(self, img):
+
+
+
+        #Pixellates image via color quantization and K-means clustering
+        Z = img.reshape((-1,30))
+
+        # convert to np.float32
+        Z = np.float32(Z)
+
+        # define criteria, number of clusters(K) and apply kmeans()
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        K = 8
+        ret,label,center=cv2.kmeans(Z,K,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+
+        # Now convert back into uint8, and make original image
+        center = np.uint8(center)
+        res = center[label.flatten()]
+        self.pixpic = res.reshape((img.shape))
+        return
+
+    def imshow(self, pic, pixpic):
         # cv2.circle(picture.img,center[0],int(center[1]),(255,255,255))
         cv2.imshow('image',picture.img)
+        cv2.imshow('Pixellated image',pixpic)
         k = cv2.waitKey(0) & 0xFF
         if k == 27:         # wait for ESC key to exit
             cv2.destroyAllWindows()
@@ -69,5 +92,6 @@ if __name__ == '__main__':
 
 # ****************** INITIALIZING STUFF ****************** #
     picture = PictureManager()
+    picture.pixellate(picture.img)
     picture.getcontours(picture.Lower, picture.Upper)
-    picture.imseg(picture.img)
+    picture.imshow(picture.img, picture.pixpic)
