@@ -17,6 +17,10 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // to motor port #2 (M3 and M4)
 Adafruit_StepperMotor *myStepper = AFMS.getStepper(200, 2);
 
+int stepCommand;
+int maxPosition = 50;
+int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
+
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps
 
@@ -26,36 +30,63 @@ void setup() {
   myStepper->setSpeed(10);  // 10 rpm   
 }
 
-int i;
-int stepCommand;
-int stepSize;
 
-int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 void loop() {
   // Check if the is incomming data in Serial
   if (Serial.available() > 0){
-      stepCommand = Serial.read() - '0';  // converts incoming data to integer
-      stepperPosition += stepCommand;
-      stepSize = abs(stepCommand);
-      Serial.println(stepCommand);
+    stepCommand = Serial.parseInt();  // converts incoming data to integer
+    // update the position of the stepper relative to initial calibration
+    stepperPosition += stepCommand;
 
-      boolean negative = false;
-      byte aChar = Serial.read();
-      Serial.println(aChar);
-      if(aChar == '-'){
-        negative = true;
+    Serial.print("I received the command: ");
+    Serial.println(stepCommand);
+    Serial.print("The motor position is: ");
+    Serial.println(stepperPosition);
+
+      if(stepperPosition < 0) {
+        // limits number of steps to above the minimum position (defined as 0)
+        myStepper->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
+        Serial.print("below minimum limit. Moving this many steps instead: ");
+        Serial.println(stepperPosition - stepCommand);
+        stepperPosition = 0;
       }
 
-      if (!negative){
-        // move the stepper in the positive direction
-        myStepper->step(stepSize, FORWARD, INTERLEAVE);
-        delay(3);
+      else if(stepperPosition > maxPosition) {
+        // limits number of steps to below the maximum position
+        myStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
+        Serial.print("above maximum limit. Moving this many steps instead: ");
+        Serial.println(stepperPosition - maxPosition);
+        stepperPosition = maxPosition;
       }
       
       else {
-        // move the stepper in the positive direction
-        myStepper->step(stepSize, BACKWARD, INTERLEAVE);
-        delay(3);
+        // if the stepper is within the upper and lower limits
+        if (stepCommand > 0){
+          // move the stepper in the positive direction
+          myStepper->step(stepCommand, FORWARD, INTERLEAVE);
+          delay(3);
+        }
+        
+        else {
+          // move the stepper in the positive direction
+          myStepper->step(-stepCommand, BACKWARD, INTERLEAVE);
+          delay(3);
+        }
       }
+
+    // "zeros" the motor on command
+    if (stepperPosition != 0 && stepCommand == 0) {
+      Serial.print("Position before returning home: ");
+      Serial.println(stepperPosition);
+      returnHome();
+    }
   }
+
 }
+
+void returnHome() {
+  // Returns the stepper back to its initial position
+  myStepper->step(stepperPosition, BACKWARD, INTERLEAVE);
+  stepperPosition = 0;
+}
+
