@@ -18,7 +18,8 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor *myStepper = AFMS.getStepper(200, 2);
 
 int stepCommand;
-int maxPosition = 50;
+int maxPosition = 90;
+int minPosition = 0;
 int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 
 void setup() {
@@ -43,19 +44,19 @@ void loop() {
     Serial.print("The motor position is: ");
     Serial.println(stepperPosition);
 
-      if(stepperPosition < 0) {
+      if(stepperPosition < minPosition) { //Before minPosition was 0
         // limits number of steps to above the minimum position (defined as 0)
-        myStepper->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
         Serial.print("below minimum limit. Moving this many steps instead: ");
         Serial.println(stepperPosition - stepCommand);
+        myStepper->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
         stepperPosition = 0;
       }
 
       else if(stepperPosition > maxPosition) {
         // limits number of steps to below the maximum position
-        myStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
         Serial.print("above maximum limit. Moving this many steps instead: ");
         Serial.println(stepperPosition - maxPosition);
+        myStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
         stepperPosition = maxPosition;
       }
       
