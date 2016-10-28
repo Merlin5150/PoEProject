@@ -16,20 +16,24 @@ from time import sleep
 connected = False
 port = '/dev/ttyACM0'
 baud = 9600
-a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
+# a_list = ['25'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
 							#Only rotates two times.
 serial_port = serial.Serial(port, baud, timeout=0) 
 
 
 
 #Running this function will be confusing at first. The motor will run even after the terminal seems finished
-def rotate(rotatingValuesList):
-	for i in range(len(rotatingValuesList)):
-		s = a_list[i] 
+def rotate():
+	i = 0
+	# for i in range(len(rotatingValuesList)):
+	while (2<3):
+		print i
+		s = '25'
 		serial_port.write(s.encode())
 		sleep(2) # this sleep(2) NEEDS to be in this loop! The stepper motor needs time to process.
+		i += 1
 
-rotate(a_list)
+rotate()
 
 
 

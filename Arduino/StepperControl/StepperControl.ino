@@ -18,8 +18,8 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor *myStepper = AFMS.getStepper(200, 2);
 
 int stepCommand;
-int maxPosition = 90;
-int minPosition = 0;
+int maxPosition = 180;
+int minPosition = -180;
 int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 
 void setup() {
