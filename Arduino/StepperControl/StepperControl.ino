@@ -9,6 +9,7 @@ Control the steppers that move the gantry using the Adafruit Motor Shield
 
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
+#include <Servo.h>
 
 // Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
@@ -18,8 +19,8 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor *myStepper = AFMS.getStepper(200, 2);
 
 int stepCommand;
-int maxPosition = 180;
-int minPosition = -180;
+int maxPosition = 180;  //TODO find actual max number of steps to go from one side to other
+int minPosition = 0;
 int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 
 void setup() {
@@ -36,6 +37,9 @@ void loop() {
   // Check if the is incomming data in Serial
   if (Serial.available() > 0){
     stepCommand = Serial.parseInt();  // converts incoming data to integer
+    char colorCode = Serial.read();
+    Serial.print("Color: ");
+    Serial.println(colorCode);
     // update the position of the stepper relative to initial calibration
     stepperPosition += stepCommand;
 
