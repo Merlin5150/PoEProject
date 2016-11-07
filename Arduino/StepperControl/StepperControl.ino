@@ -23,6 +23,7 @@ int maxPosition = 180;  //TODO find actual max number of steps to go from one si
 int minPosition = 0;
 int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 
+
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps
 
@@ -32,14 +33,18 @@ void setup() {
   myStepper->setSpeed(10);  // 10 rpm   
 }
 
-
 void loop() {
+  boolean dropSprinkle = false;
   // Check if the is incomming data in Serial
   if (Serial.available() > 0){
     stepCommand = Serial.parseInt();  // converts incoming data to integer
     char colorCode = Serial.read();
     Serial.print("Color: ");
     Serial.println(colorCode);
+    if (colorCode == 'b') {
+      dropSprinkle = true;
+    }
+//    Serial.println(dropSprinkle);
     // update the position of the stepper relative to initial calibration
     stepperPosition += stepCommand;
 

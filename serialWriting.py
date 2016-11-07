@@ -78,8 +78,12 @@ a_list = []
 
 for value in color:
 	if value == 255:
-		a_list.append('40')
+		print "black"
+		a_list.append('10b')
+
 	else:
+		print "white"
+		a_list.append('40w')
 		sleep(1)
 
 # a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
@@ -94,8 +98,9 @@ def rotate(rotatingValuesList):
 	i = 0
 	# for i in range(len(rotatingValuesList)):
 	for i in range(len(rotatingValuesList)):
-		print i
+		
 		s = a_list[i]
+		print s
 		serial_port.write(s.encode())
 		sleep(2) # this sleep(2) NEEDS to be in this loop! The stepper motor needs time to process.
 		i += 1
