@@ -25,6 +25,7 @@ int maxPosition = 180;  //TODO find actual max number of steps to go from one si
 int minPosition = 0;
 int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 
+
 void setup() {
   // initialize the pushbutton pin as an input:
   pinMode(buttonPin, INPUT);
@@ -40,14 +41,18 @@ void setup() {
   
 }
 
-
 void loop() {
+  boolean dropSprinkle = false;
   // Check if the is incomming data in Serial
   if (Serial.available() && buttonPressed > 0){
     stepCommand = Serial.parseInt();  // converts incoming data to integer
     char colorCode = Serial.read();
     Serial.print("Color: ");
     Serial.println(colorCode);
+    if (colorCode == 'b') {
+      dropSprinkle = true;
+    }
+//    Serial.println(dropSprinkle);
     // update the position of the stepper relative to initial calibration
     stepperPosition += stepCommand;
 
