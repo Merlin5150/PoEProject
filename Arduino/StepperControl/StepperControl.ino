@@ -18,24 +18,32 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // to motor port #2 (M3 and M4)
 Adafruit_StepperMotor *myStepper = AFMS.getStepper(200, 2);
 
+const int buttonPin = 8;     // the number of the pushbutton pin
+boolean buttonPressed = false;
 int stepCommand;
 int maxPosition = 180;  //TODO find actual max number of steps to go from one side to other
 int minPosition = 0;
 int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
 
 void setup() {
+  // initialize the pushbutton pin as an input:
+  pinMode(buttonPin, INPUT);
   Serial.begin(9600);           // set up Serial library at 9600 bps
 
   AFMS.begin();  // create with the default frequency 1.6KHz
 
   // setup the stepper
-  myStepper->setSpeed(10);  // 10 rpm   
+  myStepper->setSpeed(10);  // 10 rpm  
+
+  callibrate();
+
+  
 }
 
 
 void loop() {
   // Check if the is incomming data in Serial
-  if (Serial.available() > 0){
+  if (Serial.available() && buttonPressed > 0){
     stepCommand = Serial.parseInt();  // converts incoming data to integer
     char colorCode = Serial.read();
     Serial.print("Color: ");
@@ -93,5 +101,18 @@ void returnHome() {
   // Returns the stepper back to its initial position
   myStepper->step(stepperPosition, BACKWARD, INTERLEAVE);
   stepperPosition = 0;
+}
+
+void callibrate() {
+  while (buttonPressed == false) {
+    int buttonState = digitalRead(buttonPin);
+    if (buttonState == HIGH) {
+        buttonPressed = true;
+        Serial.println("pressed!");
+        break;
+      }
+    myStepper->step(1, BACKWARD, INTERLEAVE);
+    delay(3);     
+  }
 }
 
