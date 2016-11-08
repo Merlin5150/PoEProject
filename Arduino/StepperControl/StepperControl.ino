@@ -1,9 +1,16 @@
 /* 
-Poe Project 2016: Sprinkle Placer
+Poe Project 2016: CNC Sprinkle Printer
 
 Receives commands via serial
 Controls the steppers that move the gantry using the Adafruit Motor Shield
 For use with 1 axis gantry
+
+Instructions are written to serial in the form "<number of steps><color code>" 
+in which <integer> can be positive or negative to denote direction
+and color code is either 'b' for black (point at which pixel is dropped) or
+'w' for white (point at which no pixel is dropped)
+
+by Team SprinkOlin
 */
 
 // TODO could be really cool to have a controller to manually move the steppers on top of the print surface (buttons)
@@ -27,14 +34,15 @@ int stepperPosition = 0; // assumes callibration done and stepper starting at x=
 
 
 void setup() {
-  // initialize the pushbutton pin as an input:
+  // initialize the button pin as an input:
   pinMode(buttonPin, INPUT);
-  Serial.begin(9600);           // set up Serial library at 9600 bps
+  Serial.begin(9600);
 
-  AFMS.begin();  // create with the default frequency 1.6KHz
+  AFMS.begin(); // create with the default frequency 1.6KHz
 
   // setup the stepper
   xStepper->setSpeed(10);  // 10 rpm  
+  // TODO add yStepper for 2-axis gantry
 
   // run the callibration sequence on one motor
   callibrate(xStepper);
@@ -44,16 +52,18 @@ void setup() {
 
 void loop() {
   boolean dropSprinkle = false;
-  // Check if the is incomming data in Serial
+  // Check if the is incoming data in Serial and that callibration has occured
   if (Serial.available() && buttonPressed > 0){
-    stepCommand = Serial.parseInt();  // converts incoming data to integer
-    char colorCode = Serial.read();
+    // looks for a line of the form '<number of steps><color code>'
+    stepCommand = Serial.parseInt();  // looks for the step number in the incoming data
+    char colorCode = Serial.read(); // reads the first non-integer character as the color code
     Serial.print("Color: ");
     Serial.println(colorCode);
     if (colorCode == 'b') {
-      dropSprinkle = true;
+      dropSprinkle = true;  
+      // TODO add code to drop a sprinkle
     }
-//    Serial.println(dropSprinkle);
+
     // update the position of the stepper relative to initial calibration
     stepperPosition += stepCommand;
 
@@ -64,6 +74,7 @@ void loop() {
 
       if(stepperPosition < minPosition) { //Before minPosition was 0
         // limits number of steps to above the minimum position (defined as 0)
+        // only goes as many steps as possibe before minimum position is reached
         Serial.print("below minimum limit. Moving this many steps instead: ");
         Serial.println(stepperPosition - stepCommand);
         xStepper->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
@@ -72,6 +83,7 @@ void loop() {
 
       else if(stepperPosition > maxPosition) {
         // limits number of steps to below the maximum position
+        // only goes as many steps as possible before maximum is reached
         Serial.print("above maximum limit. Moving this many steps instead: ");
         Serial.println(stepperPosition - maxPosition);
         xStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
@@ -87,13 +99,13 @@ void loop() {
         }
         
         else {
-          // move the stepper in the positive direction
+          // move the stepper in the negative direction
           xStepper->step(-stepCommand, BACKWARD, INTERLEAVE);
           delay(3);
         }
       }
 
-    // "zeros" the motor on command
+    // returns the motor to the zero home position on command
     if (stepperPosition != 0 && stepCommand == 0) {
       Serial.print("Position before returning home: ");
       Serial.println(stepperPosition);
@@ -104,16 +116,14 @@ void loop() {
 }
 
 void returnHome(Adafruit_StepperMotor* motor) {
-// ^^^ This is what I attempted ^^^
   // Returns the stepper back to its initial position
   motor->step(stepperPosition, BACKWARD, INTERLEAVE);
   stepperPosition = 0;
 }
 
-void callibrate(Adafruit_StepperMotor motor) {
-// ^^^ A different attempt ^^^
-  // Runs the motor towards the home position, until it hits the button, indicating tha the 
-  // home position has been reached and that the motor should stop running.
+void callibrate(Adafruit_StepperMotor* motor) {
+  // Runs the motor towards the home position, until it hits the button, indicating that the 
+  //motor should stop running.
   while (buttonPressed == false) {
     // run the motor towards the home position until the button is pressed
     int buttonState = digitalRead(buttonPin);
