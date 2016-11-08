@@ -25,7 +25,9 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // to motor port #2 (M3 and M4)
 Adafruit_StepperMotor *xStepper = AFMS.getStepper(200, 2);
 
+Servo sprinkleServo;
 const int buttonPin = 8;     // the number of the pushbutton pin
+const int servoPin = 9;
 boolean buttonPressed = false;  // flag determines if callibration has been completed
 int stepCommand;
 int maxPosition = 180;  // TODO find actual max number of steps to go from one side to other
@@ -36,6 +38,8 @@ int stepperPosition = 0; // assumes callibration done and stepper starting at x=
 void setup() {
   // initialize the button pin as an input:
   pinMode(buttonPin, INPUT);
+  sprinkleServo.attach(servoPin);
+  sprinkleServo.write(180);
   Serial.begin(9600);
 
   AFMS.begin(); // create with the default frequency 1.6KHz
@@ -60,7 +64,12 @@ void loop() {
     Serial.print("Color: ");
     Serial.println(colorCode);
     if (colorCode == 'b') {
+      Serial.println("drop!");
       dropSprinkle = true;  
+      sprinkleServo.write(45);
+      delay(500);
+      sprinkleServo.write(90);
+      delay(500);
       // TODO add code to drop a sprinkle
     }
 
