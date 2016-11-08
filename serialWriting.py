@@ -60,10 +60,10 @@ if flag == True:
 
 	while current_pixel < 900:
 		# print current_pixel
-		if imagepixels[current_pixel] == 0:
-			print "black"
-		if imagepixels[current_pixel] == 255:
-			print 'white'
+		# if imagepixels[current_pixel] == 0:
+		# 	print "black"
+		# if imagepixels[current_pixel] == 255:
+		# 	print 'white'
 		current_pixel = current_pixel + 90
 		# print imagepixels[current_pixel-1]
 	
@@ -82,53 +82,53 @@ if flag == True:
 #####################################################
 
 
-# import serial, struct, threading
-# from time import sleep
+import serial, struct, threading
+from time import sleep
 
-# #instance variables
-# connected = False
-# port = '/dev/ttyACM0'
-# baud = 9600
-
-
-# a_list = []
-
-# for value in color:
-# 	if value == 255:
-# 		print "black"
-# 		a_list.append('10b')
-
-# 	else:
-# 		print "white"
-# 		a_list.append('40w')
-# 		sleep(1)
-
-# # a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
-# # 							#Only rotates two times.
-# # >>>>>>> c85d7475afd6b9f8cc078e016aa430554c757913
-# # serial_port = serial.Serial(port, baud, timeout=0) 
+#instance variables
+connected = False
+port = '/dev/ttyACM0'
+baud = 9600
 
 
+a_list = []
 
-# #Running this function will be confusing at first. The motor will run even after the terminal seems finished
-# def rotate(rotatingValuesList):
-# 	i = 0
-# 	# for i in range(len(rotatingValuesList)):
-# 	for i in range(len(rotatingValuesList)):
+for value in color:
+	if value == 255:
+		print "white"
+		a_list.append('40w')
+
+	else:
+		print "black"
+		a_list.append('10b')
+		sleep(1)
+
+# a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
+# 							#Only rotates two times.
+# >>>>>>> c85d7475afd6b9f8cc078e016aa430554c757913
+# serial_port = serial.Serial(port, baud, timeout=0) 
+
+
+
+#Running this function will be confusing at first. The motor will run even after the terminal seems finished
+def rotate(rotatingValuesList):
+	i = 0
+	# for i in range(len(rotatingValuesList)):
+	for i in range(len(rotatingValuesList)):
 		
-# 		s = a_list[i]
-# 		print s
-# 		serial_port.write(s.encode())
-# 		sleep(2) # this sleep(2) NEEDS to be in this loop! The stepper motor needs time to process.
-# 		i += 1
+		s = a_list[i]
+		print s
+		serial_port.write(s.encode())
+		sleep(2) # this sleep(2) NEEDS to be in this loop! The stepper motor needs time to process.
+		i += 1
 
-# rotate(a_list)
+rotate(a_list)
 
 
-# #Old attempt, because this worked for inputting stuff into terminal
-# # while(serial_port.isOpen()):
-# # 	##If you want to use
-# # 	# s = raw_input("INPUT : ")
-# # 	s = raw_input("INPUT IN DEGREES: ") #This should be here because this script mostly relies on an input.
-# # 	s = '15'; # Hopefully we can modify this to take in some data later. 
-# # 	serial_port.write(s.encode())
+#Old attempt, because this worked for inputting stuff into terminal
+# while(serial_port.isOpen()):
+# 	##If you want to use
+# 	# s = raw_input("INPUT : ")
+# 	s = raw_input("INPUT IN DEGREES: ") #This should be here because this script mostly relies on an input.
+# 	s = '15'; # Hopefully we can modify this to take in some data later. 
+# 	serial_port.write(s.encode())
