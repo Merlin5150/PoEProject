@@ -38,36 +38,46 @@ os.chdir( path )
 # Check current working directory.
 retval = os.getcwd()
 
-print "Directory changed successfully %s" % retval
+print "Directory changed successfully to %s" % retval
 
-
-flag = True
 image = cv2.imread('line.png')
+
+#Checking to make sure image exists
+if image is None:
+	flag = False
+	print "Image failed to load. Please check image and/or try again."
+else:
+	flag = True
+	print "image loaded!"
+
+#Making sure the image is the right size for later calculations
 image = image[0:30,0:300]
 
 if flag == True:
 	size = image.shape
-	# print size
+	# print size # Original size of picture
 	imagepixels = np.reshape(image, (-1,1))
-	# imagepixels = imagepixels[0:-1]
 
+	##### Uncomment to view pixel values for image 'image'#####
 	# for value in image:
 	# 	print value
 
-	# print imagepixels[0:300]
 	current_pixel = 0
+
+	# List of color values being sent to the printer
 	color = []
 
 	while current_pixel < 900:
-		# print current_pixel
 		# if imagepixels[current_pixel] == 0:
 		# 	print "black"
 		# if imagepixels[current_pixel] == 255:
 		# 	print 'white'
 		current_pixel = current_pixel + 90
-		# print imagepixels[current_pixel-1]
 	
 		color.append(imagepixels[current_pixel-1])
+
+
+	##### Uncomment to visualize image and resized 1x? image. #####
 
 	# key = cv2.waitKey(1) & 0xFF
 	# cv2.imshow('original', image)
