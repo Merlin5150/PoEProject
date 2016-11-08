@@ -26,7 +26,7 @@ import cv2
 #Changing the directory so that the result files are stored in a convenient place
 import os
 
-path = "/home/anne/PoEProject/image_seg"
+path = "/home/lzuehsow/PoEProject/image_seg"
 
 # Check current working directory.
 retval = os.getcwd()
@@ -38,29 +38,56 @@ os.chdir( path )
 # Check current working directory.
 retval = os.getcwd()
 
-print "Directory changed successfully %s" % retval
+print "Directory changed successfully to %s" % retval
 
+image = cv2.imread('line.png')
 
-flag = True
-image = cv2.imread('line.jpg')
+#Checking to make sure image exists
+if image is None:
+	flag = False
+	print "Image failed to load. Please check image and/or try again."
+else:
+	flag = True
+	print "image loaded!"
+
+#Making sure the image is the right size for later calculations
+image = image[0:30,0:300]
 
 if flag == True:
-	# size = image.shape
+	size = image.shape
+	# print size # Original size of picture
 	imagepixels = np.reshape(image, (-1,1))
-	# print imagepixels
-	current_pixel = 0
-	color = []
 
-	while current_pixel < len(imagepixels):
-		# print current_pixel
-		# print len(imagepixels)
-		current_pixel = current_pixel + 900
-		color.append(imagepixels[current_pixel-1])
-		
-	# for value in color:
+	##### Uncomment to view pixel values for image 'image'#####
+	# for value in image:
 	# 	print value
 
-	flag = False
+	current_pixel = 0
+
+	# List of color values being sent to the printer
+	color = []
+
+	while current_pixel < 900:
+		# if imagepixels[current_pixel] == 0:
+		# 	print "black"
+		# if imagepixels[current_pixel] == 255:
+		# 	print 'white'
+		current_pixel = current_pixel + 90
+	
+		color.append(imagepixels[current_pixel-1])
+
+
+	##### Uncomment to visualize image and resized 1x? image. #####
+
+	# key = cv2.waitKey(1) & 0xFF
+	# cv2.imshow('original', image)
+	# cv2.imshow('resized',imagepixels[0:900])
+	# cv2.waitKey()
+	# if key == ord("q"):
+	# 	# Release the camera, close open windows
+	# 	flag = False
+	# 	cv2.destroyAllWindows()
+	# flag = False
 
 #####################################################
 
@@ -78,18 +105,18 @@ a_list = []
 
 for value in color:
 	if value == 255:
-		print "black"
-		a_list.append('10b')
-
-	else:
 		print "white"
 		a_list.append('40w')
+
+	else:
+		print "black"
+		a_list.append('10b')
 		sleep(1)
 
 # a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
 # 							#Only rotates two times.
 # >>>>>>> c85d7475afd6b9f8cc078e016aa430554c757913
-serial_port = serial.Serial(port, baud, timeout=0) 
+# serial_port = serial.Serial(port, baud, timeout=0) 
 
 
 
