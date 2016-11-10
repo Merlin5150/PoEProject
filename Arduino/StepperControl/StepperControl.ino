@@ -39,7 +39,7 @@ void setup() {
   // initialize the button pin as an input:
   pinMode(buttonPin, INPUT);
   sprinkleServo.attach(servoPin);
-  sprinkleServo.write(180);
+  sprinkleServo.write(0);
   Serial.begin(9600);
 
   AFMS.begin(); // create with the default frequency 1.6KHz
@@ -66,9 +66,9 @@ void loop() {
     if (colorCode == 'b') {
       Serial.println("drop!");
       dropSprinkle = true;  
-      sprinkleServo.write(45);
+      sprinkleServo.write(1);
       delay(500);
-      sprinkleServo.write(90);
+      sprinkleServo.write(179);
       delay(500);
       // TODO add code to drop a sprinkle
     }
