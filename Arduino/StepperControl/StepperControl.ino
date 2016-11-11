@@ -26,8 +26,10 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_StepperMotor *xStepper = AFMS.getStepper(200, 2);
 
 Servo sprinkleServo;
+Servo beltServo;
 const int buttonPin = 8;     // the number of the pushbutton pin
-const int servoPin = 9;
+const int hopperPin = 9;
+const int beltPin = 6;
 boolean buttonPressed = false;  // flag determines if callibration has been completed
 int stepCommand;
 int maxPosition = 180;  // TODO find actual max number of steps to go from one side to other
@@ -38,8 +40,11 @@ int stepperPosition = 0; // assumes callibration done and stepper starting at x=
 void setup() {
   // initialize the button pin as an input:
   pinMode(buttonPin, INPUT);
-  sprinkleServo.attach(servoPin);
+  sprinkleServo.attach(hopperPin);
   sprinkleServo.write(0);
+
+  beltServo.attach(beltPin);
+  beltServo.write(0);
   Serial.begin(9600);
 
   AFMS.begin(); // create with the default frequency 1.6KHz
@@ -55,7 +60,6 @@ void setup() {
 }
 
 void loop() {
-  boolean dropSprinkle = false;
   // Check if the is incoming data in Serial and that callibration has occured
   if (Serial.available() && buttonPressed > 0){
     // looks for a line of the form '<number of steps><color code>'
@@ -63,15 +67,6 @@ void loop() {
     char colorCode = Serial.read(); // reads the first non-integer character as the color code
     Serial.print("Color: ");
     Serial.println(colorCode);
-    if (colorCode == 'b') {
-      Serial.println("drop!");
-      dropSprinkle = true;  
-      sprinkleServo.write(1);
-      delay(500);
-      sprinkleServo.write(179);
-      delay(500);
-      // TODO add code to drop a sprinkle
-    }
 
     // update the position of the stepper relative to initial calibration
     stepperPosition += stepCommand;
@@ -95,7 +90,7 @@ void loop() {
         // only goes as many steps as possible before maximum is reached
         Serial.print("above maximum limit. Moving this many steps instead: ");
         Serial.println(stepperPosition - maxPosition);
-        xStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
+        xStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE); 
         stepperPosition = maxPosition;
       }
       
@@ -120,8 +115,20 @@ void loop() {
       Serial.println(stepperPosition);
       returnHome(xStepper);
     }
-  }
+    if (colorCode == 'b') {
+      Serial.println("drop!");
+      sprinkleServo.write(100);
+      delay(100);
+      sprinkleServo.write(0);
+      delay(50);
+      beltServo.write(180);
+      delay(500);
+      beltServo.write(0);
+      delay(10);
+      // TODO add code to drop a sprinkle
+    }
 
+  }
 }
 
 void returnHome(Adafruit_StepperMotor* motor) {
