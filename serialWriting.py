@@ -26,7 +26,7 @@ import cv2
 #Changing the directory so that the result files are stored in a convenient place
 import os
 
-path = "/home/lzuehsow/PoEProject/image_seg"
+path = "/home/arianaolson/PoEProject/image_seg"
 
 # Check current working directory.
 retval = os.getcwd()
@@ -99,6 +99,7 @@ from time import sleep
 connected = False
 port = '/dev/ttyACM0'
 baud = 9600
+serial_port = serial.Serial(port, baud, timeout=0) 
 
 
 a_list = []
