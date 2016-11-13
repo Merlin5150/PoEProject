@@ -54,7 +54,7 @@ void setup() {
   // TODO add yStepper for 2-axis gantry
 
   // run the callibration sequence on one motor
-  callibrate(xStepper);
+  calibrate(xStepper);
 
   
 }
@@ -137,7 +137,7 @@ void returnHome(Adafruit_StepperMotor* motor) {
   stepperPosition = 0;
 }
 
-void callibrate(Adafruit_StepperMotor* motor) {
+void calibrate(Adafruit_StepperMotor* motor) {
   // Runs the motor towards the home position, until it hits the button, indicating that the 
   //motor should stop running.
   while (buttonPressed == false) {
