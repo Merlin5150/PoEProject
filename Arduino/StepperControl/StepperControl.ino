@@ -23,10 +23,12 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
 // Connect a stepper motor with 200 steps per revolution (1.8 degree)
 // to motor port #2 (M3 and M4)
-Adafruit_StepperMotor *xStepper = AFMS.getStepper(200, 2);
+Adafruit_StepperMotor *xStepper = AFMS.getStepper(200, 1);
+Adafruit_StepperMotor *yStepper = AFMS.getStepper(200, 1);
 
 Servo sprinkleServo;
 Servo beltServo;
+
 const int buttonPin = 8;     // the number of the pushbutton pin
 const int hopperPin = 9;
 const int beltPin = 6;
@@ -51,20 +53,21 @@ void setup() {
 
   // setup the stepper
   xStepper->setSpeed(10);  // 10 rpm  
-  // TODO add yStepper for 2-axis gantry
+  yStepper->setSpeed(10); 
 
   // run the callibration sequence on one motor
   calibrate(xStepper);
+  calibrate(yStepper);
 
-  
+  Serial.println("Ready");
 }
 
 void loop() {
   // Check if the is incoming data in Serial and that callibration has occured
   if (Serial.available() && buttonPressed > 0){
     // looks for a line of the form '<number of steps><color code>'
-    stepCommand = Serial.parseInt();  // looks for the step number in the incoming data
-    char colorCode = Serial.read(); // reads the first non-integer character as the color code
+    int stepCommand = Serial.read();  // looks for the step number in the incoming data
+    int colorCode = Serial.read(); // reads the first non-integer character as the color code
     Serial.print("Color: ");
     Serial.println(colorCode);
 
@@ -115,7 +118,7 @@ void loop() {
       Serial.println(stepperPosition);
       returnHome(xStepper);
     }
-    if (colorCode == 'b') {
+    if (colorCode == 1) {
       Serial.println("drop!");
       sprinkleServo.write(100);
       delay(100);
