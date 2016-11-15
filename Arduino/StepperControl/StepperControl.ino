@@ -23,18 +23,21 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 
 // Connect a stepper motor with 200 steps per revolution (1.8 degree)
 // to motor port #2 (M3 and M4)
-Adafruit_StepperMotor *xStepper = AFMS.getStepper(200, 2);
+Adafruit_StepperMotor *xStepper = AFMS.getStepper(200, 1);
+Adafruit_StepperMotor *yStepper = AFMS.getStepper(200, 1);
 
 Servo sprinkleServo;
 Servo beltServo;
+
 const int buttonPin = 8;     // the number of the pushbutton pin
 const int hopperPin = 9;
 const int beltPin = 6;
 boolean buttonPressed = false;  // flag determines if callibration has been completed
-int stepCommand;
-int maxPosition = 180;  // TODO find actual max number of steps to go from one side to other
-int minPosition = 0;  // TODO implement code to take into account dimensions and position of print surface
-int stepperPosition = 0; // assumes callibration done and stepper starting at x=0
+int stepCommandX;
+int stepCommandY;
+int maxPositionX = 180;  // TODO find actual max number of steps to go from one side to other
+int minPositionX = 0;  // TODO implement code to take into account dimensions and position of print surface
+int stepperPositionX = 0; // assumes callibration done and stepper starting at x=0
 
 
 void setup() {
@@ -51,71 +54,75 @@ void setup() {
 
   // setup the stepper
   xStepper->setSpeed(10);  // 10 rpm  
-  // TODO add yStepper for 2-axis gantry
+  yStepper->setSpeed(10); 
 
   // run the callibration sequence on one motor
   calibrate(xStepper);
+  calibrate(yStepper);
 
-  
+  Serial.println("Ready");
 }
 
 void loop() {
   // Check if the is incoming data in Serial and that callibration has occured
   if (Serial.available() && buttonPressed > 0){
     // looks for a line of the form '<number of steps><color code>'
-    stepCommand = Serial.parseInt();  // looks for the step number in the incoming data
-    char colorCode = Serial.read(); // reads the first non-integer character as the color code
+    int stepCommandX = Serial.read();  // looks for the step number in the incoming data
+//    /int stepCommandY = Serial.read();  // uncomment to get 2-axis commands
+    int colorCode = Serial.read(); // reads the first non-integer character as the color code
     Serial.print("Color: ");
     Serial.println(colorCode);
 
     // update the position of the stepper relative to initial calibration
-    stepperPosition += stepCommand;
+    stepperPositionX += stepCommandX;
 
     Serial.print("I received the command: ");
-    Serial.println(stepCommand);
+    Serial.println(stepCommandX);
     Serial.print("The motor position is: ");
-    Serial.println(stepperPosition);
+    Serial.println(stepperPositionX);
 
-      if(stepperPosition < minPosition) { //Before minPosition was 0
+      if(stepperPositionX < minPositionX) { //Before minPositionX was 0
         // limits number of steps to above the minimum position (defined as 0)
         // only goes as many steps as possibe before minimum position is reached
         Serial.print("below minimum limit. Moving this many steps instead: ");
-        Serial.println(stepperPosition - stepCommand);
-        xStepper->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
-        stepperPosition = 0;
+        Serial.println(stepperPositionX - stepCommandX);
+        xStepper->step(stepperPositionX - stepCommandX, BACKWARD, INTERLEAVE);
+        stepperPositionX = 0;
       }
 
-      else if(stepperPosition > maxPosition) {
+      else if(stepperPositionX > maxPositionX) {
         // limits number of steps to below the maximum position
         // only goes as many steps as possible before maximum is reached
         Serial.print("above maximum limit. Moving this many steps instead: ");
-        Serial.println(stepperPosition - maxPosition);
-        xStepper->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE); 
-        stepperPosition = maxPosition;
+        Serial.println(stepperPositionX - maxPositionX);
+        xStepper->step(stepperPositionX - maxPositionX, FORWARD, INTERLEAVE); 
+        stepperPositionX = maxPositionX;
       }
       
       else {
         // if the stepper is within the upper and lower limits
-        if (stepCommand > 0){
+        if (stepCommandX > 0){
           // move the stepper in the positive direction
-          xStepper->step(stepCommand, FORWARD, INTERLEAVE);
+          xStepper->step(stepCommandX, FORWARD, INTERLEAVE);
           delay(3);
         }
         
         else {
           // move the stepper in the negative direction
-          xStepper->step(-stepCommand, BACKWARD, INTERLEAVE);
+          xStepper->step(-stepCommandX, BACKWARD, INTERLEAVE);
           delay(3);
         }
       }
 
-    // returns the motor to the zero home position on command
-    if (stepperPosition != 0 && stepCommand == 0) {
-      Serial.print("Position before returning home: ");
-      Serial.println(stepperPosition);
-      returnHome(xStepper);
-    }
-    if (colorCode == 'b') {
+//    // returns the motor to the zero home position on command
+//    if (stepperPositionX != 0 && stepCommandX == 0) {
+//      Serial.print("Position before returning home: ");
+//      Serial.println(stepperPositionX);
+//      returnHome(xStepper);
+//    }
+
+    if (colorCode == 1) {
+      // activates dispenser when a black sprixel is needed
       Serial.println("drop!");
       sprinkleServo.write(100);
       delay(100);
@@ -133,8 +140,8 @@ void loop() {
 
 void returnHome(Adafruit_StepperMotor* motor) {
   // Returns the stepper back to its initial position
-  motor->step(stepperPosition, BACKWARD, INTERLEAVE);
-  stepperPosition = 0;
+  motor->step(stepperPositionX, BACKWARD, INTERLEAVE);
+  stepperPositionX = 0;
 }
 
 void calibrate(Adafruit_StepperMotor* motor) {
@@ -151,5 +158,8 @@ void calibrate(Adafruit_StepperMotor* motor) {
     motor->step(1, BACKWARD, INTERLEAVE);
     delay(3);     
   }
+  motor->step(1, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
 }
+
+void moveStepper(Adafruit_StepperMotor* motor, stepPosition, stepCommand)
 
