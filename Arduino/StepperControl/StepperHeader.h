@@ -3,7 +3,7 @@ private:
 
 	Adafruit_StepperMotor * motor;
 
-	int minPosition
+	int minPosition;
 	int maxPosition;
 	int position;
 
@@ -49,4 +49,4 @@ public:
 
 	}
 
-}
+};
