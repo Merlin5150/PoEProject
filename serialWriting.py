@@ -108,12 +108,14 @@ for value in color:
 	if value == 255:
 		print "white"
 		a_list.append(chr(40))
+		a_list.append(chr(20))
 		a_list.append(chr(0))
 		# a_list.append('40w')
 
 	else:
 		print "black"
 		a_list.append(chr(10))
+		a_list.append(chr(20))
 		a_list.append(chr(1))
 		# a_list.append('10b')
 		sleep(1)
@@ -138,10 +140,8 @@ def rotate(rotatingValuesList):
 		sleep(2) # this sleep(2) NEEDS to be in this loop! The stepper motor needs time to process.
 		i += 1
 
-while serial_port.is_open():
-	if serial_port.in_waiting() > 0:
-		rotate(a_list)
-		serial_port.close()
+	rotate(a_list)
+	# serial_port.close()
 
 #Old attempt, because this worked for inputting stuff into terminal
 # while(serial_port.isOpen()):
