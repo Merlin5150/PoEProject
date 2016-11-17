@@ -103,15 +103,19 @@ serial_port = serial.Serial(port, baud, timeout=0)
 
 
 a_list = []
-
+# color codes: white = 0, black = 1
 for value in color:
 	if value == 255:
 		print "white"
-		a_list.append('40w')
+		a_list.append(chr(40))
+		a_list.append(chr(0))
+		# a_list.append('40w')
 
 	else:
 		print "black"
-		a_list.append('10b')
+		a_list.append(chr(10))
+		a_list.append(chr(1))
+		# a_list.append('10b')
 		sleep(1)
 
 # a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
@@ -125,6 +129,7 @@ for value in color:
 def rotate(rotatingValuesList):
 	i = 0
 	# for i in range(len(rotatingValuesList)):
+
 	for i in range(len(rotatingValuesList)):
 		
 		s = a_list[i]
@@ -133,8 +138,10 @@ def rotate(rotatingValuesList):
 		sleep(2) # this sleep(2) NEEDS to be in this loop! The stepper motor needs time to process.
 		i += 1
 
-rotate(a_list)
-
+while serial_port.is_open():
+	if serial_port.in_waiting() > 0:
+		rotate(a_list)
+		serial_port.close()
 
 #Old attempt, because this worked for inputting stuff into terminal
 # while(serial_port.isOpen()):

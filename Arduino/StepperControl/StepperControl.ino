@@ -67,8 +67,12 @@ void loop() {
   // Check if the is incoming data in Serial and that callibration has occured
   if (Serial.available() && buttonPressed > 0){
     // looks for a line of the form '<number of steps><color code>'
+<<<<<<< HEAD
     int stepCommandX = Serial.read();  // looks for the step number in the incoming data
 //    /int stepCommandY = Serial.read();  // uncomment to get 2-axis commands
+=======
+    int stepCommand = Serial.read();  // looks for the step number in the incoming data
+>>>>>>> ArianaTest
     int colorCode = Serial.read(); // reads the first non-integer character as the color code
     Serial.print("Color: ");
     Serial.println(colorCode);
@@ -114,6 +118,7 @@ void loop() {
         }
       }
 
+<<<<<<< HEAD
 //    // returns the motor to the zero home position on command
 //    if (stepperPositionX != 0 && stepCommandX == 0) {
 //      Serial.print("Position before returning home: ");
@@ -123,6 +128,15 @@ void loop() {
 
     if (colorCode == 1) {
       // activates dispenser when a black sprixel is needed
+=======
+    // returns the motor to the zero home position on command
+    if (stepperPosition != 0 && stepCommand == 0) {
+      Serial.print("Position before returning home: ");
+      Serial.println(stepperPosition);
+      returnHome(xStepper);
+    }
+    if (colorCode == 1) {
+>>>>>>> ArianaTest
       Serial.println("drop!");
       sprinkleServo.write(100);
       delay(100);
