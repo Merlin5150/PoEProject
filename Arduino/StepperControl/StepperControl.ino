@@ -24,7 +24,7 @@
 // was necessary to stack motor shields. The bottom shield
 // has the default I2C address (no jumpers soldered shut)
 // the top shield has the next hex address (rightmost jumper soldered closed)
-//  reference: https://learn.adafruit.com/adafruit-motor-shield-v2-for-arduino/stacking-shields
+// reference: https://learn.adafruit.com/adafruit-motor-shield-v2-for-arduino/stacking-shields
 
 Adafruit_MotorShield AFMSbot(0x60); // Bottom shield
 Adafruit_MotorShield AFMStop(0x61); // Top shield
@@ -97,6 +97,42 @@ void calibrate(Adafruit_StepperMotor* motor, int switchPin, bool flag) {
   motor->step(5, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
 }
 
+void moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPosition, int minPosition, int maxPosition) {
+      // handles positions outside of the limits of the gantry geometry
+    if (stepperPosition < minPosition) { //Before minPositionX was 0
+      // limits number of steps to above the minimum position (defined as 0)
+      // only goes as many steps as possibe before minimum position is reached
+      Serial.print("below minimum limit. Moving this many steps instead: ");
+      Serial.println(stepperPosition - stepCommand);
+      motor->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
+      stepperPosition = 0;
+    }
+
+    else if (stepperPosition > maxPosition) {
+      // limits number of steps to below the maximum position
+      // only goes as many steps as possible before maximum is reached
+      Serial.print("above maximum limit. Moving this many steps instead: ");
+      Serial.println(stepperPosition - maxPosition);
+      motor->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
+      stepperPosition = maxPosition;
+    }
+
+    else {
+      // if the stepper is within the upper and lower limits, it can move noramlly
+      if (stepCommand > 0) {
+        // move the stepper in the positive direction
+        motor->step(stepCommand, FORWARD, INTERLEAVE);
+        delay(3);
+      }
+
+      else {
+        // move the stepper in the negative direction
+        motor->step(-stepCommand, BACKWARD, INTERLEAVE);
+        delay(3);
+      }
+    }
+}
+
 void setup() {
   // initialize the button pin as an input:
   pinMode(switch1, INPUT);
@@ -119,15 +155,15 @@ void setup() {
   yStepper->setSpeed(10);
 
   // run the calibration sequence on the motors
-  calibrate(xStepper, switch1, stop1);
-  delay(100);
-  calibrate(yStepper, switch2, stop2);
-  delay(100);
+//  calibrate(xStepper, switch1, stop1);
+//  delay(100);
+//  calibrate(yStepper, switch2, stop2);
+//  delay(100);
 }
 
 void loop() {
   // Check if the is incoming data in Serial and that callibration has occured
-  if (Serial.available()) {
+  if (Serial.available() >= 3 and Serial.available() % 3 == 0) {
     // looks for a line of the form '<number of steps><color code>'
     int stepCommandX = Serial.read();  // first character in sequence corresponds to X position
     int stepCommandY = Serial.read(); // second corresponds to Y position
@@ -140,55 +176,30 @@ void loop() {
     // we handle this a little later!
     stepperPositionX += stepCommandX;
 
-    Serial.print("I received the command: ");
-    Serial.println(stepCommandX);
+    Serial.print("I received the commands: ");
+    Serial.print(stepCommandX);
+    Serial.print(" ");
+    Serial.println(stepCommandY);
     Serial.print("The motor position is: ");
-    Serial.println(stepperPositionX);
+    Serial.print(stepperPositionX);
+    Serial.print(" ");
+    Serial.println(stepperPositionY);
 
-    // handles positions outside of the limits of the gantry geometry
-    if (stepperPositionX < minPositionX) { //Before minPositionX was 0
-      // limits number of steps to above the minimum position (defined as 0)
-      // only goes as many steps as possibe before minimum position is reached
-      Serial.print("below minimum limit. Moving this many steps instead: ");
-      Serial.println(stepperPositionX - stepCommandX);
-      xStepper->step(stepperPositionX - stepCommandX, BACKWARD, INTERLEAVE);
-      stepperPositionX = 0;
-    }
-
-    else if (stepperPositionX > maxPositionX) {
-      // limits number of steps to below the maximum position
-      // only goes as many steps as possible before maximum is reached
-      Serial.print("above maximum limit. Moving this many steps instead: ");
-      Serial.println(stepperPositionX - maxPositionX);
-      xStepper->step(stepperPositionX - maxPositionX, FORWARD, INTERLEAVE);
-      stepperPositionX = maxPositionX;
-    }
-
-    else {
-      // if the stepper is within the upper and lower limits, it can move noramlly
-      if (stepCommandX > 0) {
-        // move the stepper in the positive direction
-        xStepper->step(stepCommandX, FORWARD, INTERLEAVE);
-        delay(3);
-      }
-
-      else {
-        // move the stepper in the negative direction
-        xStepper->step(-stepCommandX, BACKWARD, INTERLEAVE);
-        delay(3);
-      }
-    }
-
+    moveMotor(xStepper, stepCommandX, stepperPositionX, minPositionX, maxPositionX);
+    delay(3);  
+    moveMotor(yStepper, stepCommandY, stepperPositionY, minPositionY, maxPositionY); 
+    delay(3);
+    
     if (colorCode == 1) {
       // activates dispenser when a black sprixel is needed
       if (colorCode == 1) {
         // agitate sprinkles so they can fall into chute
-        sprinkleServo.write(30)
-        delay(10)
-        sprinkleServo.write(0)
+        sprinkleServo.write(30);
+        delay(10);
+        sprinkleServo.write(0);
         // rotate dispenser to drop a sprinkle
         dispenser->step(20, FORWARD, SINGLE);
-        delay(3)
+        delay(3);
       }
 
     }
