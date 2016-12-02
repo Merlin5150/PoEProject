@@ -198,7 +198,7 @@ void loop() {
         delay(10);
         sprinkleServo.write(0);
         // rotate dispenser to drop a sprinkle
-        dispenser->step(20, FORWARD, SINGLE);
+        dispenser->step(100, BACKWARD, INTERLEAVE);
         delay(3);
       }
 
