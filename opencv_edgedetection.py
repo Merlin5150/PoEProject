@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv2.imread('testpictures/4.png',0)
+img = cv2.imread('testpictures/flower.jpg',0)
 # edges = cv2.Canny(img,100,200)
 # print img
 # print "img[1]: " 
@@ -19,9 +19,10 @@ img = cv2.imread('testpictures/4.png',0)
 
 #try resizing, help here: http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#void%20resize(InputArray%20src,%20OutputArray%20dst,%20Size%20dsize,%20double%20fx,%20double%20fy,%20int%20interpolation)
 # Make fx & fy equal to the general scale of the cupcakes we use.
-res = cv2.resize(img,None,fx=.0325, fy=.0325, interpolation = cv2.INTER_AREA)
-# print "width of new image: " + str(len(res[1])) 
-# print "height of new image: " + str(len(res))
+res = cv2.resize(img,None,fx=.03, fy=.03, interpolation = cv2.INTER_AREA)
+print "width of new image: " + str(len(res[1])) 
+print "height of new image: " + str(len(res))
+print "original image matrix: "
 print res
 
 
@@ -32,7 +33,8 @@ for i in range(len(res)):
 		else:
 			res[i][j] = 255
 
-
+print "new image matrix: "
+print res
 # print "one element of new image: "  + str(res[0][502])
 
 
