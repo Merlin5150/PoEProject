@@ -85,7 +85,7 @@ void calibrate(Adafruit_StepperMotor* motor, int switchPin, bool flag) {
   while (flag == false) {
     // run the motor towards the home position until the button is pressed
     int buttonState = digitalRead(switchPin);
-    if (buttonState == LOW) {
+    if (buttonState == HIGH) {
       flag = true;
       Serial.println("pressed!");
       break;
@@ -94,7 +94,7 @@ void calibrate(Adafruit_StepperMotor* motor, int switchPin, bool flag) {
     delay(3);
   }
   Serial.println("GO!");
-  motor->step(5, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
+  motor->step(10, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
 }
 
 void moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPosition, int minPosition, int maxPosition) {
@@ -139,7 +139,7 @@ void setup() {
 
   // attach servo objects to their pins and set to starting position
   sprinkleServo.attach(hopperPin);
-  sprinkleServo.write(0);
+  sprinkleServo.write(1);
   beltServo.attach(beltPin);
   beltServo.write(0);
 
@@ -151,14 +151,14 @@ void setup() {
   AFMSbot.begin();
 
   // setup the steppers
-  xStepper->setSpeed(10);  // 10 rpm
-  yStepper->setSpeed(10);
+  xStepper->setSpeed(30);  // 10 rpm
+  yStepper->setSpeed(30);
 
   // run the calibration sequence on the motors
-//  calibrate(xStepper, switch1, stop1);
-//  delay(100);
-//  calibrate(yStepper, switch2, stop2);
-//  delay(100);
+  calibrate(xStepper, switch1, stop1);
+  delay(100);
+  calibrate(yStepper, switch2, stop2);
+  delay(100);
 }
 
 void loop() {
@@ -171,11 +171,6 @@ void loop() {
     Serial.print("Color: ");
     Serial.println(colorCode);
 
-    // update the position of the stepper relative to initial calibration
-    // at this point, it is OK if the position is outside of the limits,
-    // we handle this a little later!
-    stepperPositionX += stepCommandX;
-
     Serial.print("I received the commands: ");
     Serial.print(stepCommandX);
     Serial.print(" ");
@@ -185,8 +180,7 @@ void loop() {
     Serial.print(" ");
     Serial.println(stepperPositionY);
 
-    moveMotor(xStepper, stepCommandX, stepperPositionX, minPositionX, maxPositionX);
-    delay(3);  
+    moveMotor(xStepper, stepCommandX, stepperPositionX, minPositionX, maxPositionX);  
     moveMotor(yStepper, stepCommandY, stepperPositionY, minPositionY, maxPositionY); 
     delay(3);
     
@@ -194,9 +188,9 @@ void loop() {
       // activates dispenser when a black sprixel is needed
       if (colorCode == 1) {
         // agitate sprinkles so they can fall into chute
-        sprinkleServo.write(30);
-        delay(10);
-        sprinkleServo.write(0);
+        sprinkleServo.write(179);
+        delay(500);
+        sprinkleServo.write(1);
         // rotate dispenser to drop a sprinkle
         dispenser->step(100, BACKWARD, INTERLEAVE);
         delay(3);
