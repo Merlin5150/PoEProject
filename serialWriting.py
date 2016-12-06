@@ -116,7 +116,7 @@ for value in color:
 		print "black"
 		a_list.append(chr(10))
 		a_list.append(chr(10))
-		a_list.append(chr(1))
+		# a_list.append(chr(1))
 		# a_list.append('10b')
 		sleep(1)
 
@@ -128,18 +128,19 @@ for value in color:
 
 
 #Running this function will be confusing at first. The motor will run even after the terminal seems finished
-def rotate(rotatingValuesList):
-	i = 0
-	# for i in range(len(rotatingValuesList)):
+# def rotate(rotatingValuesList):
+# 	i = 0
+# 	# for i in range(len(rotatingValuesList)):
 
-	for i in range(len(rotatingValuesList)):
+# 	for i in range(len(rotatingValuesList)):
 		
-		s = rotatingValuesList[i]
-		print ord(s)
-		serial_port.write(s.encode())
-		i += 1
+# 		s = rotatingValuesList[i]
+# 		print ord(s)
+# 		serial_port.write(s.encode())
+# 		i += 1
 
-rotate(a_list)
+# rotate(a_list)
+serial_port.write(a_list)
 
 serial_port.close()
 
