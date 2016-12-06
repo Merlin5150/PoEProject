@@ -48,7 +48,6 @@ const int switch1 = 8;
 const int switch2 = 2; 
 
 const int hopperPin = 9;  // the agitator servo pin
-const int beltPin = 6;  // the conveyor belt servo pin
 
 // flags to determine callibration status
 // these are passed as arguments into the callibration function (defined below)
@@ -61,9 +60,9 @@ int stepCommandX;
 int stepCommandY;
 
 //  setting min and max positions ensures that the steppers do not rotate past the limits of the gantry
-int maxPositionX = 180;  // TODO find actual max number of steps to go from one side to other
+int maxPositionX = 800;  // TODO find actual max number of steps to go from one side to other
 int minPositionX = 0;  // TODO implement code to take into account dimensions and position of print surface
-int maxPositionY = 180;
+int maxPositionY = 500;
 int minPositionY = 0;
 
 // Because steppers, unlike servos, cannot keep track of their position, we need
@@ -97,9 +96,11 @@ void calibrate(Adafruit_StepperMotor* motor, int switchPin, bool flag) {
   motor->step(10, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
 }
 
-void moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPosition, int minPosition, int maxPosition) {
+int moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPosition, int minPosition, int maxPosition) {
       // handles positions outside of the limits of the gantry geometry
-    if (stepperPosition < minPosition) { //Before minPositionX was 0
+    Serial.print("**");
+    Serial.println(stepperPosition);
+    if (stepperPosition + stepCommand < minPosition) { //Before minPositionX was 0
       // limits number of steps to above the minimum position (defined as 0)
       // only goes as many steps as possibe before minimum position is reached
       Serial.print("below minimum limit. Moving this many steps instead: ");
@@ -108,12 +109,12 @@ void moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPositio
       stepperPosition = 0;
     }
 
-    else if (stepperPosition > maxPosition) {
+    else if (stepperPosition + stepCommand > maxPosition) {
       // limits number of steps to below the maximum position
       // only goes as many steps as possible before maximum is reached
       Serial.print("above maximum limit. Moving this many steps instead: ");
-      Serial.println(stepperPosition - maxPosition);
-      motor->step(stepperPosition - maxPosition, FORWARD, INTERLEAVE);
+      Serial.println(maxPosition - stepperPosition);
+      motor->step(maxPosition - stepperPosition, FORWARD, INTERLEAVE);
       stepperPosition = maxPosition;
     }
 
@@ -130,7 +131,9 @@ void moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPositio
         motor->step(-stepCommand, BACKWARD, INTERLEAVE);
         delay(3);
       }
+      stepperPosition += stepCommand;
     }
+    return stepperPosition;
 }
 
 void setup() {
@@ -140,7 +143,6 @@ void setup() {
   // attach servo objects to their pins and set to starting position
   sprinkleServo.attach(hopperPin);
   sprinkleServo.write(1);
-  beltServo.attach(beltPin);
   beltServo.write(0);
 
   // start Serial so that we can receive commands
@@ -163,40 +165,22 @@ void setup() {
 
 void loop() {
   // Check if the is incoming data in Serial and that callibration has occured
-  if (Serial.available() >= 3 and Serial.available() % 3 == 0) {
+  if (Serial.available() >= 2) {
     // looks for a line of the form '<number of steps><color code>'
     int stepCommandX = Serial.read();  // first character in sequence corresponds to X position
     int stepCommandY = Serial.read(); // second corresponds to Y position
-    int colorCode = Serial.read(); // third corresponds to the color code
-    Serial.print("Color: ");
-    Serial.println(colorCode);
 
-    Serial.print("I received the commands: ");
-    Serial.print(stepCommandX);
-    Serial.print(" ");
-    Serial.println(stepCommandY);
-    Serial.print("The motor position is: ");
-    Serial.print(stepperPositionX);
-    Serial.print(" ");
-    Serial.println(stepperPositionY);
 
-    moveMotor(xStepper, stepCommandX, stepperPositionX, minPositionX, maxPositionX);  
-    moveMotor(yStepper, stepCommandY, stepperPositionY, minPositionY, maxPositionY); 
-    delay(3);
+    stepperPositionX = moveMotor(xStepper, stepCommandX, stepperPositionX, minPositionX, maxPositionX);  
+    stepperPositionY = moveMotor(yStepper, stepCommandY * 2, stepperPositionY, minPositionY, maxPositionY); 
+    delay(500);
     
-    if (colorCode == 1) {
-      // activates dispenser when a black sprixel is needed
-      if (colorCode == 1) {
+
         // agitate sprinkles so they can fall into chute
         sprinkleServo.write(179);
         delay(500);
         sprinkleServo.write(1);
-        // rotate dispenser to drop a sprinkle
-        dispenser->step(100, BACKWARD, INTERLEAVE);
-        delay(3);
-      }
-
-    }
+        delay(500);
   }
 }
 
