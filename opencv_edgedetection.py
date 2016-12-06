@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # img = cv2.imread('testpictures/flower.jpg',0)
-img = cv2.imread('smiley.png',0)
+img = cv2.imread('testpictures/flower.jpg',0)
 
 # edges = cv2.Canny(img,100,200)
 # print img
@@ -29,16 +29,30 @@ print "height of new image: " + str(len(res))
 print "original image matrix: "
 print res
 
-
+x_motor = []
+y_motor = []
 for i in range(len(res)):
 	for j in range(len(res[i])):
 		if res[i][j] < 200:
+			x_motor.append(i)
+			y_motor.append(j)
 			res[i][j] = 0
 		else:
 			res[i][j] = 255
 
 print "new image matrix: "
 print res
+
+print "length of xmotor coordinates:" 
+print len(x_motor)
+print "length of ymotor coordinates:" 
+print len(y_motor)
+
+print "x-coordinates: "
+print x_motor
+print "y-coordinates: "
+print y_motor
+
 
 color = np.reshape(res, (-1,1))
 
@@ -51,6 +65,9 @@ while q == False:
 
 	if key == ord("q"):
 		break
+
+
+
 # # # Code to show the edge image, which is the negation 
 # plt.subplot(121),plt.imshow(img,cmap = 'gray')
 # plt.title('original'), plt.xticks([]), plt.yticks([])

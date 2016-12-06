@@ -139,7 +139,7 @@ void setup() {
 
   // attach servo objects to their pins and set to starting position
   sprinkleServo.attach(hopperPin);
-  sprinkleServo.write(0);
+  sprinkleServo.write(110);
   beltServo.attach(beltPin);
   beltServo.write(0);
 
@@ -194,9 +194,9 @@ void loop() {
       // activates dispenser when a black sprixel is needed
       if (colorCode == 1) {
         // agitate sprinkles so they can fall into chute
-        sprinkleServo.write(30);
+        sprinkleServo.write(30 + 110);
         delay(10);
-        sprinkleServo.write(0);
+        sprinkleServo.write(0 + 110);
         // rotate dispenser to drop a sprinkle
         dispenser->step(100, BACKWARD, INTERLEAVE);
         delay(3);

@@ -4,7 +4,7 @@ import cv2
 #Changing the directory so that the result files are stored in a convenient place
 import os
 
-path = "/home/anne/PoEProject/image_seg"
+path = "/home/anne/PoEProject/UPDATED_image_seg"
 
 # Check current working directory.
 retval = os.getcwd()
