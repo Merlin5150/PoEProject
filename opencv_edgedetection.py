@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv2.imread('testpictures/flower.jpg',0)
+# img = cv2.imread('testpictures/flower.jpg',0)
+img = cv2.imread('smiley.png',0)
+
 # edges = cv2.Canny(img,100,200)
 # print img
 # print "img[1]: " 
@@ -19,7 +21,9 @@ img = cv2.imread('testpictures/flower.jpg',0)
 
 #try resizing, help here: http://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#void%20resize(InputArray%20src,%20OutputArray%20dst,%20Size%20dsize,%20double%20fx,%20double%20fy,%20int%20interpolation)
 # Make fx & fy equal to the general scale of the cupcakes we use.
-res = cv2.resize(img,None,fx=.03, fy=.03, interpolation = cv2.INTER_AREA)
+# res = cv2.resize(img,None,fx=.03, fy=.03, interpolation = cv2.INTER_AREA)
+
+res = cv2.resize(img,(30,30), interpolation = cv2.INTER_AREA) # Resize image to 30x30 pixels
 print "width of new image: " + str(len(res[1])) 
 print "height of new image: " + str(len(res))
 print "original image matrix: "
@@ -35,17 +39,26 @@ for i in range(len(res)):
 
 print "new image matrix: "
 print res
+
+color = np.reshape(res, (-1,1))
+
 # print "one element of new image: "  + str(res[0][502])
+q = False
 
+while q == False:
+	cv2.imshow('BW',res)
+	key = cv2.waitKey(1) & 0xFF
 
-# # Code to show the edge image, which is the negation 
-plt.subplot(121),plt.imshow(img,cmap = 'gray')
-plt.title('original'), plt.xticks([]), plt.yticks([])
+	if key == ord("q"):
+		break
+# # # Code to show the edge image, which is the negation 
+# plt.subplot(121),plt.imshow(img,cmap = 'gray')
+# plt.title('original'), plt.xticks([]), plt.yticks([])
+# # plt.subplot(122),plt.imshow(res,cmap = 'gray')
+# # plt.title('modified'), plt.xticks([]), plt.yticks([])
+
 # plt.subplot(122),plt.imshow(res,cmap = 'gray')
 # plt.title('modified'), plt.xticks([]), plt.yticks([])
 
-plt.subplot(122),plt.imshow(res,cmap = 'gray')
-plt.title('modified'), plt.xticks([]), plt.yticks([])
 
-
-plt.show()
+# plt.show()
