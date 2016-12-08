@@ -26,8 +26,10 @@ img = cv2.imread('testpictures/flower.jpg',0)
 res = cv2.resize(img,(30,30), interpolation = cv2.INTER_AREA) # Resize image to 30x30 pixels
 print "width of new image: " + str(len(res[1])) 
 print "height of new image: " + str(len(res))
-print "original image matrix: "
-print res
+
+
+
+
 
 x_motor = []
 y_motor = []
@@ -49,9 +51,9 @@ print "length of ymotor coordinates:"
 print len(y_motor)
 
 print "x-coordinates: "
-print x_motor
+print len(x_motor)
 print "y-coordinates: "
-print y_motor
+print len(y_motor)
 
 
 color = np.reshape(res, (-1,1))
