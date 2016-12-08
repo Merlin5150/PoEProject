@@ -10,6 +10,7 @@
 
 import numpy as np
 import cv2
+import serial 
 from matplotlib import pyplot as plt
 # import scipy as sk
 
@@ -69,8 +70,8 @@ while (remaining_coordinates > 1):
 	print displacementX
 	print "new y displacement: "
 	print displacementY
-	a_list.append(displacementX)
-	a_list.append(displacementY)
+	a_list.append(chr(displacementX))
+	a_list.append(chr(displacementY))
 	# a_list.append(chr(1)) #Color code
 	print "x coordinate: "
 	print Xcoord
@@ -94,10 +95,12 @@ while (remaining_coordinates > 1):
 # serial_port = serial.Serial(port, baud, timeout=0) 
 
 #Running this function will be confusing at first. The motor will run even after the terminal seems finished
-# def rotate(rotatingValuesList):
-# 	i = 0
-# 	for i in range(len(rotatingValuesList)):
-# 		s = rotatingValuesList[i]
-# 		print ord(s)
-# 		serial_port.write(s.encode())
-# 		i += 1
+def rotate(rotatingValuesList):
+	i = 0
+	for i in range(len(rotatingValuesList)):
+		s = rotatingValuesList[i]
+		# print ord(s)
+		serial_port.write(s.encode())
+		i += 1
+rotate(a_list)
+serial_port.close()
