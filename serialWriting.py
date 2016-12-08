@@ -101,30 +101,3 @@ while (remaining_coordinates > 1):
 # 		print ord(s)
 # 		serial_port.write(s.encode())
 # 		i += 1
-
-# rotate(a_list)
-
-# serial_port.close()
-
-# #Old attempt, because this worked for inputting stuff into terminal
-# # while(serial_port.isOpen()):
-# # 	##If you want to use
-# # 	# s = raw_input("INPUT : ")
-# # 	s = raw_input("INPUT IN DEGREES: ") #This should be here because this script mostly relies on an input.
-# # 	s = '15'; # Hopefully we can modify this to take in some data later. 
-# # 	serial_port.write(s.encode())
-
-
-
-
-# 	print "new image matrix: "
-# 	print res
-
-# 	color = np.reshape(res, (-1,1))
-
-# while flag == True:
-# 	cv2.imshow('BW',res)
-# 	key = cv2.waitKey(1) & 0xFF
-
-# 	if key == ord("q"):
-# 		break
