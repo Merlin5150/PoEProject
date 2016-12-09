@@ -12,14 +12,15 @@ import numpy as np
 import cv2
 import serial 
 from matplotlib import pyplot as plt
+import time
 # import scipy as sk
 
-imgsize = 40
+imgsize = 10
 x_motor = []
 y_motor = []
 
 # Resizing the image:
-img = cv2.imread('testpictures/smiley.png')
+img = cv2.imread('testpictures/line.png')
 #Checking to make sure image exists
 if img is None:
 	flag = False
@@ -47,8 +48,8 @@ for i in range(imgsize):
 		else:
 			newres[i][j] = 255
 
-print "x coordinates go from " + str(x_motor[0]) + " to " + str(x_motor[-1])
-print "y coordinates go from " + str(y_motor[0]) + " to " + str(y_motor[-1])
+print "x coordinates go from " + str(x_motor[0]) + " to " + str(x_motor[-1]) + " and has this length: " + str(len(x_motor))
+print "y coordinates go from " + str(y_motor[0]) + " to " + str(y_motor[-1]) + " and has this length: " + str(len(y_motor))
 
 #INITIALIZING VALUES:
 Xcoord = x_motor[-1]
@@ -70,37 +71,63 @@ while (remaining_coordinates > 1):
 	print displacementX
 	print "new y displacement: "
 	print displacementY
-	a_list.append(chr(displacementX))
-	a_list.append(chr(displacementY))
+	if (displacementX > 0):
+		a_list.append(chr(1))
+	else:
+		a_list.append(chr(0))
+	a_list.append(chr(np.abs(displacementX)))
+
+	if (displacementY > 0):
+		a_list.append(chr(1))
+	else:
+		a_list.append(chr(0))
+	a_list.append(chr(np.abs(displacementY)))
 	# a_list.append(chr(1)) #Color code
-	print "x coordinate: "
-	print Xcoord
-	print "y coordinate:"
-	print Ycoord
+	# print "x coordinate: "
+	# print Xcoord
+	# print "y coordinate:"
+	# print Ycoord
 	previousX = Xcoord
 	previousY = Ycoord
 	del x_motor[-1]
 	del y_motor[-1]
-	print "updating this x coordinate to: "
-	print x_motor[-1]
+	# print "updating this x coordinate to: "
+	# print x_motor[-1]
 	Xcoord = x_motor[-1]
-	print "updating this y coordinate to: "
-	print y_motor[-1]
+	# print "updating this y coordinate to: "
+	# print y_motor[-1]
 	Ycoord = y_motor[-1]
 	remaining_coordinates = len(x_motor)
 
 # a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
 # 							#Only rotates two times.
 # >>>>>>> c85d7475afd6b9f8cc078e016aa430554c757913
+port = '/dev/ttyACM0'
+serial_port = serial.Serial(port, baudrate=9600, timeout=1, xonxoff=True)
 # serial_port = serial.Serial(port, baud, timeout=0) 
 
 #Running this function will be confusing at first. The motor will run even after the terminal seems finished
 def rotate(rotatingValuesList):
-	i = 0
-	for i in range(len(rotatingValuesList)):
-		s = rotatingValuesList[i]
-		# print ord(s)
-		serial_port.write(s.encode())
-		i += 1
+	flag = True
+	while flag:
+		if serial_port.inWaiting() > 0:
+			serial_port.flushInput()
+			print "flushed"
+			flag = False
+
+
+	barr = bytearray(rotatingValuesList)
+	for b in barr:
+		print b,
+	print '\n'
+	for i in range(0, len(barr), 4):
+		print [c for c in barr[i:i+4]]
+		serial_port.write(barr[i:i+4])
+		time.sleep(5)
+		# print barr, 'test'
+
+	# 	print bytearray(rotatingValuesList)
+	# serial_port.write(bytearray(rotatingValuesList))
 rotate(a_list)
+serial_port.flushInput()
 serial_port.close()
