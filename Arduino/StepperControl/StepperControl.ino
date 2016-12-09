@@ -14,20 +14,11 @@
   by Team SprinkOlin
 */
 
-// TODO could be really cool to have a controller to manually move the steppers on top of the print surface (buttons)
-
 #include <Adafruit_MotorShield.h>
 #include <Servo.h>
 #include "StepperHeader.h"
 
-// Create the motor shield objects. Because we are using 3 stepper motors, it
-// was necessary to stack motor shields. The bottom shield
-// has the default I2C address (no jumpers soldered shut)
-// the top shield has the next hex address (rightmost jumper soldered closed)
-// reference: https://learn.adafruit.com/adafruit-motor-shield-v2-for-arduino/stacking-shields
-
 Adafruit_MotorShield AFMSbot(0x60); // Bottom shield
-Adafruit_MotorShield AFMStop(0x61); // Top shield
 
 // Connect stepper motors with 200 steps per revolution (1.8 degrees per step)
 // to the motorports on the shield
@@ -36,12 +27,9 @@ Adafruit_MotorShield AFMStop(0x61); // Top shield
 Adafruit_StepperMotor *xStepper = AFMSbot.getStepper(200, 1); // M1 and M2 bottom board
 Adafruit_StepperMotor *yStepper = AFMSbot.getStepper(200, 2); // M3 and M4 bottom board
 
-// the dispenser stepper:
-Adafruit_StepperMotor *dispenser = AFMStop.getStepper(200, 1);  //M1 and M2 top board
 
 // initialize Servo Motor objects (may not need both of these anymore)
 Servo sprinkleServo;  // for the agitator in the hopper
-Servo beltServo;  // for the conveyor belt
 
 // limit switch pins
 const int switch1 = 8;
@@ -56,13 +44,13 @@ int stop2 = false;
 
 // initialize command variables. These will be used to store the desired number of steps
 // that the motors are commanded to go (command obtained via Serial)
-int stepCommandX;
-int stepCommandY;
+int stepCommandX = 0;
+int stepCommandY = 0;
 
 //  setting min and max positions ensures that the steppers do not rotate past the limits of the gantry
-int maxPositionX = 800;  // TODO find actual max number of steps to go from one side to other
-int minPositionX = 0;  // TODO implement code to take into account dimensions and position of print surface
-int maxPositionY = 500;
+int maxPositionX = 710;
+int minPositionX = 0; 
+int maxPositionY = 2100;
 int minPositionY = 0;
 
 // Because steppers, unlike servos, cannot keep track of their position, we need
@@ -86,34 +74,27 @@ void calibrate(Adafruit_StepperMotor* motor, int switchPin, bool flag) {
     int buttonState = digitalRead(switchPin);
     if (buttonState == HIGH) {
       flag = true;
-      Serial.println("pressed!");
       break;
     }
     motor->step(1, BACKWARD, INTERLEAVE);
     delay(3);
   }
-  Serial.println("GO!");
-  motor->step(10, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
+//  Serial.println("GO!");
+  motor->step(100, FORWARD, INTERLEAVE); // steps a tiny bit away from the limit switch
 }
 
 int moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPosition, int minPosition, int maxPosition) {
       // handles positions outside of the limits of the gantry geometry
-    Serial.print("**");
-    Serial.println(stepperPosition);
     if (stepperPosition + stepCommand < minPosition) { //Before minPositionX was 0
       // limits number of steps to above the minimum position (defined as 0)
       // only goes as many steps as possibe before minimum position is reached
-      Serial.print("below minimum limit. Moving this many steps instead: ");
-      Serial.println(stepperPosition - stepCommand);
-      motor->step(stepperPosition - stepCommand, BACKWARD, INTERLEAVE);
+      motor->step(abs(minPosition - stepperPosition), BACKWARD, INTERLEAVE);
       stepperPosition = 0;
     }
 
     else if (stepperPosition + stepCommand > maxPosition) {
       // limits number of steps to below the maximum position
       // only goes as many steps as possible before maximum is reached
-      Serial.print("above maximum limit. Moving this many steps instead: ");
-      Serial.println(maxPosition - stepperPosition);
       motor->step(maxPosition - stepperPosition, FORWARD, INTERLEAVE);
       stepperPosition = maxPosition;
     }
@@ -128,7 +109,7 @@ int moveMotor(Adafruit_StepperMotor* motor, int stepCommand, int stepperPosition
 
       else {
         // move the stepper in the negative direction
-        motor->step(-stepCommand, BACKWARD, INTERLEAVE);
+        motor->step(abs(stepCommand), BACKWARD, INTERLEAVE);
         delay(3);
       }
       stepperPosition += stepCommand;
@@ -142,45 +123,57 @@ void setup() {
 
   // attach servo objects to their pins and set to starting position
   sprinkleServo.attach(hopperPin);
-  sprinkleServo.write(1);
-  beltServo.write(0);
+  sprinkleServo.write(179);
 
   // start Serial so that we can receive commands
   Serial.begin(9600);
 
   // allows us to communicate with the motor shields
-  AFMStop.begin(); // create with the default frequency 1.6KHz
   AFMSbot.begin();
 
   // setup the steppers
-  xStepper->setSpeed(30);  // 10 rpm
-  yStepper->setSpeed(30);
+  xStepper->setSpeed(50);  // 50 rpm
+  yStepper->setSpeed(50);
 
   // run the calibration sequence on the motors
   calibrate(xStepper, switch1, stop1);
   delay(100);
   calibrate(yStepper, switch2, stop2);
   delay(100);
+  Serial.flush();
+  Serial.println("Ready");
 }
 
 void loop() {
   // Check if the is incoming data in Serial and that callibration has occured
-  if (Serial.available() >= 2) {
-    // looks for a line of the form '<number of steps><color code>'
-    int stepCommandX = Serial.read();  // first character in sequence corresponds to X position
-    int stepCommandY = Serial.read(); // second corresponds to Y position
+  if (Serial.available() >= 4) {
+    // Because characters are 1 byte and ints are 2 bytes, we have to be careful to cast our Serial
+    // readings to a character to ensure that the right information is being communicated!'
+    char signX = (char)Serial.read();  // direction of motion in X
+    int stepCommandX = 50 * (int)(char)(Serial.read());  // first character in sequence corresponds to X position
+      if (signX == 0) {
+        stepCommandX *= -1;
+      }
+
+    char signY = (char)Serial.read();  // direction of motion in Y
+    int stepCommandY = 50 * (int)(char)Serial.read(); // second corresponds to Y position
+    Serial.println(stepCommandY);
+      if (signY == 0) {
+        stepCommandY *= -1;
+      }
 
 
     stepperPositionX = moveMotor(xStepper, stepCommandX, stepperPositionX, minPositionX, maxPositionX);  
     stepperPositionY = moveMotor(yStepper, stepCommandY * 2, stepperPositionY, minPositionY, maxPositionY); 
-    delay(500);
+    delay(1000);
     
 
-        // agitate sprinkles so they can fall into chute
-        sprinkleServo.write(179);
-        delay(500);
-        sprinkleServo.write(1);
-        delay(500);
+    // turn the dispenser to dump an m&m
+    sprinkleServo.write(1);
+    delay(500);
+    sprinkleServo.write(179);
+    delay(500);
+//    Serial.flush();
   }
 }
 
