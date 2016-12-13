@@ -13,14 +13,13 @@ import cv2
 import serial 
 from matplotlib import pyplot as plt
 import time
-# import scipy as sk
 
-imgsize = 10
+imgsize = 10	# side length of square image
 x_motor = []
 y_motor = []
 
 # Resizing the image:
-img = cv2.imread('testpictures/line.png')
+img = cv2.imread('testpictures/1.png')
 #Checking to make sure image exists
 if img is None:
 	flag = False
@@ -30,11 +29,9 @@ else:
 	print "image loaded!"
 
 if flag == True:
-	res = cv2.resize(img,(imgsize,imgsize), interpolation = cv2.INTER_AREA) # Resize image to 30x30 pixels
+	res = cv2.resize(img,(imgsize,imgsize), interpolation = cv2.INTER_AREA) # Resize image to 10x10 pixels
 	print "width of new image: " + str(len(res[1])) 
 	print "height of new image: " + str(len(res))
-	# print "original image matrix: "
-	# print res
 
 newres = np.zeros((imgsize, imgsize))
 #Reformats the res matrix and stores the result in the newres matrix. Also, starts filling in values into x_motor and y_motor
@@ -60,10 +57,8 @@ previousX = 0
 previousY = 0
 #The values we'll feed to the rotating method
 a_list = []
-#The number of steps that constitute a "sprixel" or "M&M pixel"
-stepper_factor = 10  #change after we redefine what a sprixel is
 
-# color codes: white = 0, black = 1
+# direction codes: BACKWARDS = 0, FORWARDS = 1
 while (remaining_coordinates > 1):
 	displacementX = Xcoord - previousX
 	displacementY = Ycoord - previousY
@@ -82,36 +77,38 @@ while (remaining_coordinates > 1):
 	else:
 		a_list.append(chr(0))
 	a_list.append(chr(np.abs(displacementY)))
-	# a_list.append(chr(1)) #Color code
-	# print "x coordinate: "
-	# print Xcoord
-	# print "y coordinate:"
-	# print Ycoord
+
 	previousX = Xcoord
 	previousY = Ycoord
+
 	del x_motor[-1]
 	del y_motor[-1]
-	# print "updating this x coordinate to: "
-	# print x_motor[-1]
+
 	Xcoord = x_motor[-1]
-	# print "updating this y coordinate to: "
-	# print y_motor[-1]
 	Ycoord = y_motor[-1]
+
 	remaining_coordinates = len(x_motor)
 
-# a_list = ['90', '90', '90'] #A list of rotation values. Once we get rotation values for our image we should put them in this format.
-# 							#Only rotates two times.
-# >>>>>>> c85d7475afd6b9f8cc078e016aa430554c757913
-port = '/dev/ttyACM0'
-serial_port = serial.Serial(port, baudrate=9600, timeout=1, xonxoff=True)
-# serial_port = serial.Serial(port, baud, timeout=0) 
 
-#Running this function will be confusing at first. The motor will run even after the terminal seems finished
+port = '/dev/ttyACM0' # change to match current port Arduino is connected to
+serial_port = serial.Serial(port, baudrate=9600, timeout=1, xonxoff=True)	# open the serial port 
+
+
 def rotate(rotatingValuesList):
+	'''
+	Converts the list of directions to a bytearray for transmission
+	packets of 4 bytes are written to serial at a time
+
+	rotatingValuesList: a list of commands specifying the direction and displacement 
+	for each motor
+	'''
+
+	# Handshakes with the Arduino. 
+	# The Arduino sends "Ready" over serial once calibration is complete
 	flag = True
 	while flag:
 		if serial_port.inWaiting() > 0:
-			serial_port.flushInput()
+			serial_port.flushInput()	#clear the serial input buffer
 			print "flushed"
 			flag = False
 
@@ -121,13 +118,10 @@ def rotate(rotatingValuesList):
 		print b,
 	print '\n'
 	for i in range(0, len(barr), 4):
-		print [c for c in barr[i:i+4]]
+		print [c for c in barr[i:i+4]]	
 		serial_port.write(barr[i:i+4])
-		time.sleep(5)
-		# print barr, 'test'
+		time.sleep(5)	# this delay keeps the serial buffer from overflowing
 
-	# 	print bytearray(rotatingValuesList)
-	# serial_port.write(bytearray(rotatingValuesList))
 rotate(a_list)
-serial_port.flushInput()
-serial_port.close()
+serial_port.flushInput() # prevents false starts if running script multiple times
+serial_port.close()	# close the serial port.
